@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Business Card - High Resolution</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            background: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card-preview {
+            text-align: center;
+        }
+
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-width: 100%;
+            height: auto;
+        }
+
+        .label {
+            margin-top: 15px;
+            color: #666;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .info {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <p><strong>Business Card Preview - 300 DPI</strong></p>
+        <p>Standard size: 3.5" × 2" (1050 × 600 pixels at 300 DPI)</p>
+    </div>
+
+    <div class="controls">
+        <button id="btnFront">Download Front (PNG)</button>
+        <button id="btnBack">Download Back (PNG)</button>
+        <button id="btnBoth">Download Both</button>
+    </div>
+
+    <div class="preview-container">
+        <div class="card-preview">
+            <canvas id="frontCanvas"></canvas>
+            <div class="label">FRONT</div>
+        </div>
+
+        <div class="card-preview">
+            <canvas id="backCanvas"></canvas>
+            <div class="label">BACK</div>
+        </div>
+    </div>
+
+    <script>
+        const DPI = 300;
+        const WIDTH_INCHES = 3.5;
+        const HEIGHT_INCHES = 2;
+        const MARGIN_PX = 60;
+        const WIDTH_PX = WIDTH_INCHES * DPI;
+        const HEIGHT_PX = HEIGHT_INCHES * DPI;
+        const CONTENT_WIDTH = WIDTH_PX - (MARGIN_PX * 2);
+        const CONTENT_HEIGHT = HEIGHT_PX - (MARGIN_PX * 2);
+
+        function drawFront(canvas) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = WIDTH_PX;
+            canvas.height = HEIGHT_PX;
+
+            // Background
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, WIDTH_PX, HEIGHT_PX);
+
+            // Top border in dark gray (full height including header)
+            ctx.fillStyle = '#2d2d2d';
+            ctx.fillRect(0, 0, WIDTH_PX, MARGIN_PX + 60);
+
+            // Terminal header
+            const headerHeight = 60;
+            ctx.fillStyle = '#2d2d2d';
+            ctx.fillRect(MARGIN_PX, MARGIN_PX, CONTENT_WIDTH, headerHeight);
+
+            // Border line
+            ctx.fillStyle = '#3d3d3d';
+            ctx.fillRect(0, MARGIN_PX + headerHeight, WIDTH_PX, 2);
+
+            // Buttons
+            const buttonY = MARGIN_PX + 30;
+            const buttonSize = 28;
+            const buttonSpacing = 15;
+            const startX = MARGIN_PX + 30;
+
+            ctx.fillStyle = '#ff5f57';
+            ctx.beginPath();
+            ctx.arc(startX, buttonY, buttonSize/2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#febc2e';
+            ctx.beginPath();
+            ctx.arc(startX + buttonSize + buttonSpacing, buttonY, buttonSize/2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#28c840';
+            ctx.beginPath();
+            ctx.arc(startX + (buttonSize + buttonSpacing) * 2, buttonY, buttonSize/2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Terminal title
+            ctx.fillStyle = '#8a8a8a';
+            ctx.font = '29px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('bash', WIDTH_PX / 2, buttonY + 8);
+
+            // Terminal body - command text
+            const textStartY = HEIGHT_PX / 2 + 10;
+            const textStartX = MARGIN_PX + 20;
+
+            // First line with prompt
+            ctx.fillStyle = '#5f87af';
+            ctx.font = 'bold 30px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('$', textStartX, textStartY);
+
+            // Set font for measurements and text
+            ctx.fillStyle = '#00ff00';
+            ctx.font = '30px monospace';
+
+            // Measure the prompt width to align properly
+            ctx.font = 'bold 30px monospace';
+            const promptWidth = ctx.measureText('$ ').width;
+            ctx.font = '30px monospace';
+
+            const dollarWidth = ctx.measureText('$').width;
+            ctx.fillText(' curl -fsSL https://elastic.co/start-local |', textStartX + dollarWidth, textStartY);
+
+            // Second line - aligned with command start
+            ctx.fillText('sh -s -- --edot', textStartX + promptWidth, textStartY + 40);
+
+            // Cursor
+            const commandWidth = ctx.measureText('sh -s -- --edot').width;
+            ctx.fillRect(textStartX + promptWidth + commandWidth + 5, textStartY + 40 - 22, 13, 28);
+        }
+
+        function drawBack(canvas) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = WIDTH_PX;
+            canvas.height = HEIGHT_PX;
+
+            // Background
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, WIDTH_PX, HEIGHT_PX);
+
+            // Top border in dark gray (full height including header)
+            ctx.fillStyle = '#2d2d2d';
+            ctx.fillRect(0, 0, WIDTH_PX, MARGIN_PX + 60);
+
+            // Terminal header
+            const headerHeight = 60;
+            ctx.fillStyle = '#2d2d2d';
+            ctx.fillRect(MARGIN_PX, MARGIN_PX, CONTENT_WIDTH, headerHeight);
+
+            // Border line
+            ctx.fillStyle = '#3d3d3d';
+            ctx.fillRect(0, MARGIN_PX + headerHeight, WIDTH_PX, 2);
+
+            // Buttons
+            const buttonY = MARGIN_PX + 30;
+            const buttonSize = 28;
+            const buttonSpacing = 15;
+            const startX = MARGIN_PX + 30;
+
+            ctx.fillStyle = '#ff5f57';
+            ctx.beginPath();
+            ctx.arc(startX, buttonY, buttonSize/2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#febc2e';
+            ctx.beginPath();
+            ctx.arc(startX + buttonSize + buttonSpacing, buttonY, buttonSize/2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#28c840';
+            ctx.beginPath();
+            ctx.arc(startX + (buttonSize + buttonSpacing) * 2, buttonY, buttonSize/2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Terminal title
+            ctx.fillStyle = '#8a8a8a';
+            ctx.font = '29px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('info', WIDTH_PX / 2, buttonY + 8);
+
+            // Body content
+            const contentStartY = HEIGHT_PX / 2 - 60;
+            const contentX = MARGIN_PX + 20;
+
+            ctx.textAlign = 'left';
+
+            // Title
+            ctx.fillStyle = '#00ff00';
+            ctx.font = 'bold 64px monospace';
+            ctx.fillText('Start Local. Fast.', contentX, contentStartY);
+
+            // Description
+            ctx.fillStyle = '#b0b0b0';
+            ctx.font = '33px monospace';
+            ctx.fillText('One command to launch a complete', contentX, contentStartY + 70);
+            ctx.fillText('OpenTelemetry environment on your machine.', contentX, contentStartY + 108);
+
+            // Features
+            ctx.fillStyle = '#8a8a8a';
+            ctx.font = '31px monospace';
+            const featureY = contentStartY + 165;
+            ctx.fillText('✓ EDOT Collector (Elastic Distribution of OTel)', contentX, featureY);
+            ctx.fillText('✓ Elasticsearch + Kibana', contentX, featureY + 42);
+            ctx.fillText('✓ Zero configuration', contentX, featureY + 84);
+            ctx.fillText('✓ Open source', contentX, featureY + 126);
+        }
+
+        function downloadCanvas(canvas, filename) {
+            try {
+                const dataURL = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                console.log('Downloaded:', filename);
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Download failed: ' + error.message);
+            }
+        }
+
+        // Set up event listeners
+        document.getElementById('btnFront').addEventListener('click', function() {
+            const canvas = document.getElementById('frontCanvas');
+            downloadCanvas(canvas, 'business-card-front-300dpi.png');
+        });
+
+        document.getElementById('btnBack').addEventListener('click', function() {
+            const canvas = document.getElementById('backCanvas');
+            downloadCanvas(canvas, 'business-card-back-300dpi.png');
+        });
+
+        document.getElementById('btnBoth').addEventListener('click', function() {
+            const frontCanvas = document.getElementById('frontCanvas');
+            const backCanvas = document.getElementById('backCanvas');
+            downloadCanvas(frontCanvas, 'business-card-front-300dpi.png');
+            setTimeout(function() {
+                downloadCanvas(backCanvas, 'business-card-back-300dpi.png');
+            }, 200);
+        });
+
+        // Draw on load
+        window.addEventListener('load', function() {
+            try {
+                drawFront(document.getElementById('frontCanvas'));
+                drawBack(document.getElementById('backCanvas'));
+            } catch (error) {
+                console.error('Error drawing cards:', error);
+                alert('Error rendering cards: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
