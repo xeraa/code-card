@@ -6,3 +6,4 @@ Claude generated HTML code to build images for [Moo](https://www.moo.com) busine
 
 Terminal look for Elastic's [start local with EDOT](https://github.com/elastic/start-local?tab=readme-ov-file#install-the-elastic-distribution-of-opentelemetry-edot-collector).
 
+![](terminal-EDOT.jpg)
